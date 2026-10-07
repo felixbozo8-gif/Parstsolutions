@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="PartSolutions - Catálogo de repuestos originales Ford. Busca por vehículo o número de parte.">
+    <meta name="theme-color" content="#262C33">
+    <title>PartSolutions | Repuestos Originales Ford</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =====================================================
+         HEADER / NAVEGACIÓN
+    ====================================================== -->
+    <header class="header">
+        <div class="container header-content">
+
+            <a href="#inicio" class="logo" aria-label="PartSolutions - Inicio">
+                <img src="images/logo.png" alt="PartSolutions">
+            </a>
+
+            <nav class="nav" id="nav">
+                <a href="#inicio">Inicio</a>
+                <a href="#repuestos">Categorías</a>
+                <a href="#buscador">Buscar repuesto</a>
+                <a href="#nosotros">Nosotros</a>
+                <a href="#contacto">Contacto</a>
+            </nav>
+
+            <div class="header-actions">
+                <button type="button" class="cart-trigger" data-cart-open aria-label="Abrir mi pedido">
+                    <span class="cart-trigger-icon">🛒</span>
+                    <span>Mi pedido</span>
+                    <b id="cartCount">0</b>
+                </button>
+
+                <a href="#contacto" class="header-contact">Contáctanos</a>
+            </div>
+
+            <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <main>
+
+        <!-- =====================================================
+             HERO
+        ====================================================== -->
+        <section id="inicio" class="hero">
+            <div class="hero-background"></div>
+
+            <div class="container hero-layout">
+                <div class="hero-copy">
+                    <div class="hero-kicker">
+                        <span class="hero-line"></span>
+                        PARTSOLUTIONS
+                    </div>
+
+                    <h1>
+                        Repuestos Ford.
+                        <span>La pieza correcta.</span>
+                    </h1>
+
+                    <p>
+                        Encuentra repuestos originales y consulta
+                        disponibilidad de forma rápida y sencilla.
+                    </p>
+
+                    <div class="hero-actions">
+                        <a href="#buscador" class="btn-primary">Buscar repuesto <span>→</span></a>
+                        <a href="#repuestos" class="btn-ghost">Explorar categorías</a>
+                    </div>
+
+                    <div class="hero-features">
+                        <div><strong>01</strong><span>Catálogo de repuestos</span></div>
+                        <div><strong>02</strong><span>Búsqueda por vehículo</span></div>
+                        <div><strong>03</strong><span>Pedido por WhatsApp</span></div>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <img src="images/fachada/e-17.png" alt="PartSolutions - Repuestos Ford">
+                    <div class="hero-visual-label">
+                        <small>CATÁLOGO</small>
+                        <strong>FORD</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             BARRA DE ACCESO RÁPIDO
+        ====================================================== -->
+        <section class="quick-bar" aria-label="Accesos rápidos">
+            <div class="container quick-grid">
+                <a href="#buscador" class="quick-card">
+                    <span class="quick-icon">⌕</span>
+                    <span><small>BUSCA</small><strong>Por vehículo</strong></span>
+                    <b>→</b>
+                </a>
+                <a href="#buscador" class="quick-card" data-quick-part>
+                    <span class="quick-icon">#</span>
+                    <span><small>BUSCA</small><strong>Por número de parte</strong></span>
+                    <b>→</b>
+                </a>
+                <button type="button" class="quick-card quick-card-button" data-cart-open>
+                    <span class="quick-icon">🛒</span>
+                    <span><small>REVISA</small><strong>Mi pedido</strong></span>
+                    <b>→</b>
+                </button>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             BUSCADOR
+        ====================================================== -->
+        <section id="buscador" class="search-section">
+            <div class="container">
+                <div class="section-heading search-heading">
+                    <span>ENCUENTRA TU REPUESTO</span>
+                    <h2>Busca por vehículo o número de parte</h2>
+                    <p>Utiliza los datos de tu Ford o introduce directamente el código de la pieza.</p>
+                </div>
+
+                <div class="search-tabs">
+                    <button type="button" class="search-tab active" data-search="vehicle">
+                        <span>01</span> Buscar por vehículo
+                    </button>
+                    <button type="button" class="search-tab" data-search="part">
+                        <span>02</span> Buscar por número de parte
+                    </button>
+                </div>
+
+                <div class="search-card">
+                    <div class="search-box" id="vehicleSearch">
+                        <div class="form-group">
+                            <label for="marca">Marca</label>
+                            <select id="marca">
+                                <option value="">Selecciona una marca</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="modelo">Modelo</label>
+                            <select id="modelo" disabled>
+                                <option value="">Selecciona un modelo</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="motor">Motor</label>
+                            <select id="motor" disabled>
+                                <option value="">Selecciona un motor</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ano">Año</label>
+                            <select id="ano" disabled>
+                                <option value="">Selecciona un año</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoria">Categoría</label>
+                            <select id="categoria" disabled>
+                                <option value="">Selecciona una categoría</option>
+                            </select>
+                        </div>
+
+                        <button type="button" id="buscarBtn" class="search-button">
+                            Buscar repuesto <span>→</span>
+                        </button>
+                    </div>
+
+                    <div class="part-search" id="partSearch">
+                        <div class="part-search-content">
+                            <label for="partNumber">Número de parte / código</label>
+                            <div class="part-search-row">
+                                <input type="text" id="partNumber" placeholder="Busca por código, repuesto, modelo o motor..." autocomplete="off">
+                                <button type="button" id="searchPartBtn" class="search-button">
+                                    Buscar pieza <span>→</span>
+                                </button>
+                            </div>
+                            <p class="part-search-help">
+                                Puedes buscar por número de parte Ford, Motorcraft, OEM o código interno PartSolutions.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="resultado" class="search-result"></div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             CATEGORÍAS
+        ====================================================== -->
+        <section id="repuestos" class="categories-section">
+            <div class="container">
+
+                <div class="price-view-panel" aria-label="Modo de visualización de precios">
+                    <div class="price-view-copy">
+                        <span>¿CÓMO DESEAS VER LOS PRECIOS?</span>
+                        <strong>Selecciona una modalidad</strong>
+                    </div>
+                    <div class="price-view-buttons">
+                        <button type="button" class="price-view-button active" data-price-mode="contado">💵 Precio de contado</button>
+                        <button type="button" class="price-view-button" data-price-mode="cashea">🟡 Cashea</button>
+                        <button type="button" class="price-view-button" data-price-mode="ambos">📊 Ambos</button>
+                    </div>
+                    <div class="cashea-level-control" data-cashea-level-control hidden>
+                        <label for="casheaLevel">Nivel Cashea</label>
+                        <select id="casheaLevel">
+                            <option value="1">Nivel 1 · 60% inicial</option>
+                            <option value="2">Nivel 2 · 50% inicial</option>
+                            <option value="3">Nivel 3 · 40% inicial</option>
+                            <option value="4">Nivel 4 · 30% inicial</option>
+                            <option value="5">Nivel 5 · 25% inicial</option>
+                            <option value="6" selected>Nivel 6 · 20% inicial</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="section-heading categories-heading">
+                    <span>CATÁLOGO PARTSOLUTIONS</span>
+                    <h2>Explora por categoría</h2>
+                    <p>Selecciona una categoría para ver todos los repuestos disponibles.</p>
+                </div>
+
+                <div class="category-carousel-wrap">
+                    <button type="button" class="category-nav category-prev" data-category-prev aria-label="Categoría anterior">‹</button>
+
+                    <div class="category-carousel" data-category-carousel>
+                        <div class="category-track" data-category-track>
+
+                            <button type="button" class="category-card" data-category="carroceria">
+                                <span class="category-image"><img src="images/carroceria/carroceria.jpg" alt="Carrocería" loading="lazy"></span>
+                                <span class="category-number">01</span>
+                                <span class="category-name">Carrocería</span>
+                                <span class="category-count" data-category-count="carroceria">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="correas">
+                                <span class="category-image"><img src="images/correas/correas.jpg" alt="Correas y Mangueras" loading="lazy"></span>
+                                <span class="category-number">02</span>
+                                <span class="category-name">Correas y Mangueras</span>
+                                <span class="category-count" data-category-count="correas">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="electrico">
+                                <span class="category-image"><img src="images/electrico/electrico.jpg" alt="Sistema Eléctrico" loading="lazy"></span>
+                                <span class="category-number">03</span>
+                                <span class="category-name">Sistema Eléctrico</span>
+                                <span class="category-count" data-category-count="electrico">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="frenos">
+                                <span class="category-image"><img src="images/frenos/frenos.jpg" alt="Frenos" loading="lazy"></span>
+                                <span class="category-number">04</span>
+                                <span class="category-name">Frenos</span>
+                                <span class="category-count" data-category-count="frenos">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="ignicion">
+                                <span class="category-image"><img src="images/ignicion/ignicion.jpg" alt="Ignición" loading="lazy"></span>
+                                <span class="category-number">05</span>
+                                <span class="category-name">Ignición</span>
+                                <span class="category-count" data-category-count="ignicion">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="inyeccion">
+                                <span class="category-image"><img src="images/inyeccion/inyeccion.jpg" alt="Inyección de Combustible" loading="lazy"></span>
+                                <span class="category-number">06</span>
+                                <span class="category-name">Inyección</span>
+                                <span class="category-count" data-category-count="inyeccion">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="kit-tiempo">
+                                <span class="category-image"><img src="images/kit-tiempo/kit-tiempo.jpg" alt="Kit de Tiempo" loading="lazy"></span>
+                                <span class="category-number">07</span>
+                                <span class="category-name">Kit de Tiempo</span>
+                                <span class="category-count" data-category-count="kit-tiempo">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="motor">
+                                <span class="category-image"><img src="images/motor/motor.jpg" alt="Motor y Relacionados" loading="lazy"></span>
+                                <span class="category-number">08</span>
+                                <span class="category-name">Motor y Relacionados</span>
+                                <span class="category-count" data-category-count="motor">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="suspension">
+                                <span class="category-image"><img src="images/suspension/suspension.jpg" alt="Suspensión y Dirección" loading="lazy"></span>
+                                <span class="category-number">09</span>
+                                <span class="category-name">Suspensión y Dirección</span>
+                                <span class="category-count" data-category-count="suspension">0 productos</span>
+                            </button>
+
+                            <button type="button" class="category-card" data-category="transmision">
+                                <span class="category-image"><img src="images/transmision/transmision.jpg" alt="Transmisión" loading="lazy"></span>
+                                <span class="category-number">10</span>
+                                <span class="category-name">Transmisión</span>
+                                <span class="category-count" data-category-count="transmision">0 productos</span>
+                            </button>
+
+                        </div>
+                    </div>
+
+                    <button type="button" class="category-nav category-next" data-category-next aria-label="Siguiente categoría">›</button>
+                </div>
+
+                <div class="categories-bottom">
+                    <span>10 categorías</span>
+                    <span>•</span>
+                    <span>Desliza o utiliza las flechas</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             NOSOTROS
+        ====================================================== -->
+        <section id="nosotros" class="about-section">
+            <div class="container about-grid">
+                <div class="about-visual">
+                    <div class="about-image-main">
+                        <img src="images/fachada/fachada.jpg" alt="PartSolutions">
+                    </div>
+                    <div class="about-stamp">
+                        <span>PART</span>
+                        <strong>SOLUTIONS</strong>
+                    </div>
+                </div>
+
+                <div class="about-copy">
+                    <span class="eyebrow">SOBRE PARTSOLUTIONS</span>
+                    <h2>Una forma más sencilla de encontrar tu repuesto.</h2>
+                    <p>
+                        Nuestro catálogo está pensado para facilitar la búsqueda de repuestos
+                        Ford mediante vehículo, número de parte y categorías.
+                    </p>
+                    <p>
+                        Consulta la información del producto, agrégalo a tu pedido y continúa
+                        la solicitud directamente por WhatsApp.
+                    </p>
+
+                    <div class="about-points">
+                        <div><b>✓</b><span>Catálogo organizado por categorías</span></div>
+                        <div><b>✓</b><span>Búsqueda por vehículo y código</span></div>
+                        <div><b>✓</b><span>Precios publicados en el catálogo</span></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             CONTACTO
+        ====================================================== -->
+        <section id="contacto" class="contact-section">
+            <div class="container contact-card">
+                <div>
+                    <span class="eyebrow">¿NECESITAS AYUDA?</span>
+                    <h2>Encuentra la pieza que estás buscando.</h2>
+                    <p>Si no encuentras el repuesto en el catálogo, contáctanos para verificar disponibilidad.</p>
+                </div>
+                <a href="#buscador" class="btn-light">Buscar repuesto <span>→</span></a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <img src="images/logo.png" alt="PartSolutions">
+            <div>
+                <strong>PartSolutions</strong>
+                <span>Repuestos originales Ford</span>
+            </div>
+            <p>© 2026 PartSolutions. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL DE PRODUCTOS -->
+    <div class="modal" id="productModal">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose" type="button" aria-label="Cerrar">×</button>
+
+            <div class="modal-header">
+                <span>PARTSOLUTIONS</span>
+                <h2 id="modalTitle">Productos</h2>
+                <p id="modalDescription">Encuentra el repuesto que necesitas.</p>
+            </div>
+
+            <div class="product-search">
+                <input type="text" id="productSearch" placeholder="Buscar dentro de esta categoría..." autocomplete="off">
+            </div>
+
+            <div class="modal-products" id="modalProducts"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html> 
+<a 
+    href="https://wa.me/584122520412?text=Hola%2C%20estoy%20interesado%20en%20consultar%20un%20repuesto%20Ford."
+    class="btn-contact"
+    target="_blank"
+>
+    Contáctanos
+</a>
