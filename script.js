@@ -3580,6 +3580,18 @@ const partSearch = document.getElementById("partSearch");
 const partNumber = document.getElementById("partNumber");
 const searchPartBtn = document.getElementById("searchPartBtn");
 
+const catalogSearch = document.getElementById("catalogSearch");
+const catalogProducts = document.getElementById("catalogProducts");
+const catalogCount = document.getElementById("catalogCount");
+const catalogEmpty = document.getElementById("catalogEmpty");
+const catalogLoadMore = document.getElementById("catalogLoadMore");
+const catalogFilters = document.getElementById("catalogFilters");
+
+let catalogCategoriaActual = "todos";
+let catalogTextoActual = "";
+let catalogLimite = 12;
+const CATALOGO_POR_PAGINA = 12;
+
 const modal = document.getElementById("productModal");
 const modalTitle = document.getElementById("modalTitle");
 const modalDescription = document.getElementById("modalDescription");
@@ -4183,6 +4195,156 @@ function mostrarResultadosInteligentes(
 }
 
 /* =========================================
+   CÁLCULOS CASHEA
+========================================= */
+
+function calculateCasheaDetails(
+    precio,
+    tasaDolar = TASA_DOLAR,
+    tasaCashea = TASA_CASHEA,
+    nivel = nivelCasheaActual
+) {
+    const precioEnDivisas = Number(precio) || 0;
+    const precioConAumento = precioEnDivisas / 0.92;
+    const precioConAumentoBs = precioConAumento * Number(tasaDolar || 1);
+    const divisorTasa = Number(tasaCashea || 1);
+    const precioTotalCashea = Math.ceil(precioConAumentoBs / divisorTasa);
+    const porcentajeInicial = CASHEA_LEVEL_PERCENTAGES[nivel] ?? 0.20;
+    const inicialDeCashea = precioTotalCashea * porcentajeInicial;
+    const totalCuotas = precioTotalCashea - inicialDeCashea;
+    const cuotasQuincenales = totalCuotas / 3;
+
+    return {
+        precioTotalCashea,
+        inicialDeCashea,
+        cuotasQuincenales,
+        porcentajeInicial
+    };
+}
+
+function obtenerDetalleCashea(producto, nivel = nivelCasheaActual) {
+    const precio = obtenerPrecioNumero(producto);
+    if (precio === null) return null;
+    return calculateCasheaDetails(
+        precio,
+        TASA_DOLAR,
+        TASA_CASHEA,
+        nivel
+    );
+}
+
+function actualizarControlesPrecio() {
+    document
+        .querySelectorAll("[data-price-mode]")
+        .forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.priceMode === modoPrecioActual
+            );
+        });
+
+    const control =
+        document.querySelector("[data-cashea-level-control]");
+
+    if (control) {
+        control.hidden = modoPrecioActual === "contado";
+    }
+
+    const select = document.getElementById("casheaLevel");
+
+    if (select) {
+        select.value = String(nivelCasheaActual);
+    }
+}
+
+function refrescarPreciosCatalogo() {
+    renderizarCatalogoPrincipal();
+
+    if (typeof listaProductosActual !== "undefined" && listaProductosActual.length) {
+        mostrarProductos(listaProductosActual);
+    }
+}
+
+function inicializarSelectorPrecios() {
+    document.querySelectorAll("[data-price-mode]").forEach(button => {
+        button.addEventListener("click", () => {
+            modoPrecioActual = button.dataset.priceMode || "contado";
+            actualizarControlesPrecio();
+            refrescarPreciosCatalogo();
+        });
+    });
+
+    const select = document.getElementById("casheaLevel");
+
+    select?.addEventListener("change", () => {
+        nivelCasheaActual = Math.min(
+            6,
+            Math.max(1, Number(select.value) || 6)
+        );
+        refrescarPreciosCatalogo();
+    });
+
+    actualizarControlesPrecio();
+}
+
+function crearBloquePreciosHTML(producto, clase = "catalog") {
+    const precio = obtenerPrecioNumero(producto);
+    const cashea = obtenerDetalleCashea(producto);
+
+    const contadoHTML = precio !== null
+        ? `
+            <div class="price-mode-line">
+                <span>Precio de contado</span>
+                <strong>${escaparHTML(formatearMonto(precio))}</strong>
+            </div>
+        `
+        : `
+            <div class="price-mode-line">
+                <span>Precio de contado</span>
+                <strong>Consultar</strong>
+            </div>
+        `;
+
+    const casheaHTML = cashea
+        ? `
+            <div class="price-mode-line price-mode-cashea">
+                <span>Cashea · Nivel ${nivelCasheaActual}</span>
+                <strong>${escaparHTML(formatearMonto(cashea.precioTotalCashea))}</strong>
+            </div>
+            <div class="cashea-mini-details">
+                <div>
+                    <span>Inicial (${Math.round(cashea.porcentajeInicial * 100)}%)</span>
+                    <strong>${escaparHTML(formatearMonto(cashea.inicialDeCashea))}</strong>
+                </div>
+                <div>
+                    <span>3 cuotas quincenales</span>
+                    <strong>${escaparHTML(formatearMonto(cashea.cuotasQuincenales))}</strong>
+                </div>
+            </div>
+        `
+        : `
+            <div class="price-mode-line price-mode-cashea">
+                <span>Cashea</span>
+                <strong>Consultar</strong>
+            </div>
+        `;
+
+    let contenido = contadoHTML;
+
+    if (modoPrecioActual === "cashea") {
+        contenido = casheaHTML;
+    } else if (modoPrecioActual === "ambos") {
+        contenido = contadoHTML + casheaHTML;
+    }
+
+    return `
+        <div class="${clase}-price-options">
+            ${contenido}
+        </div>
+    `;
+}
+
+/* =========================================
    TARJETA DE PRODUCTO
 ========================================= */
 
@@ -4191,51 +4353,6 @@ function crearProductoHTML(producto) {
     const ford = obtenerEtiquetas(producto.numeroParteFord);
     const motorcraft = obtenerEtiquetas(producto.codigoMotorcraft);
     const oem = obtenerEtiquetas(producto.codigoOEM);
-    const precio = obtenerPrecioNumero(producto);
-    const cashea = obtenerDetalleCashea(producto);
-
-    const contadoHTML = precio !== null ? `
-        <div class="price-option-main">
-            <span>Precio de contado</span>
-            <strong>${formatearMonto(precio)}</strong>
-        </div>
-    ` : `
-        <div class="price-option-main">
-            <span>Precio de contado</span>
-            <strong>Consultar</strong>
-        </div>
-    `;
-
-    const casheaHTML = cashea ? `
-        <div class="price-option-cashea">
-            <span>Cashea · Nivel ${nivelCasheaActual}</span>
-            <strong>${formatearMonto(cashea.precioTotalCashea)}</strong>
-        </div>
-        <div class="cashea-mini-details">
-            <div>
-                <span>Inicial (${Math.round(cashea.porcentajeInicial * 100)}%)</span>
-                <strong>${formatearMonto(cashea.inicialDeCashea)}</strong>
-            </div>
-            <div>
-                <span>3 cuotas quincenales</span>
-                <strong>${formatearMonto(cashea.cuotasQuincenales)}</strong>
-            </div>
-        </div>
-    ` : `
-        <div class="price-option-cashea">
-            <span>Cashea</span>
-            <strong>Consultar</strong>
-        </div>
-    `;
-
-    let priceBlock = '';
-    if (modoPrecioActual === 'contado') {
-        priceBlock = contadoHTML;
-    } else if (modoPrecioActual === 'cashea') {
-        priceBlock = casheaHTML;
-    } else {
-        priceBlock = contadoHTML + casheaHTML;
-    }
 
     return `
         <div class="modal-product">
@@ -4267,18 +4384,30 @@ function crearProductoHTML(producto) {
                 <p><strong>Tipo:</strong> ${escaparHTML(producto.tipo)}</p>
                 <p><strong>Disponibilidad:</strong> ${producto.disponibilidad ? "Disponible" : "Consultar disponibilidad"}</p>
 
-                <div class="modal-product-price-options">
-                    ${priceBlock}
-                </div>
+                ${crearBloquePreciosHTML(producto, "modal")}
 
                 <div class="product-actions">
-                    <button type="button" class="add-to-cart-button" data-product-id="${escaparHTML(producto.id)}">
+                    <button
+                        type="button"
+                        class="add-to-cart-button"
+                        data-product-id="${escaparHTML(producto.id)}"
+                    >
                         🛒 Agregar al pedido
                     </button>
-                    <button type="button" class="product-detail-button" data-product-detail="${escaparHTML(producto.id)}">
+
+                    <button
+                        type="button"
+                        class="product-detail-button"
+                        data-product-detail="${escaparHTML(producto.id)}"
+                    >
                         Ver ficha completa →
                     </button>
-                    <a href="#contacto" class="consult-button" onclick="cerrarModal()">
+
+                    <a
+                        href="#contacto"
+                        class="consult-button"
+                        onclick="cerrarModal()"
+                    >
                         Consultar disponibilidad
                     </a>
                 </div>
@@ -4359,37 +4488,184 @@ searchPartBtn?.addEventListener("click", buscarNumeroParte);
 
 
 /* =========================================
+   CATÁLOGO DIRECTO EN PÁGINA
+========================================= */
+
+function obtenerProductosCatalogoFiltrados() {
+    let lista = obtenerTodosLosProductos();
+
+    if (catalogCategoriaActual !== "todos") {
+        lista = lista.filter(producto => {
+            return producto.categoria === catalogCategoriaActual;
+        });
+    }
+
+    const texto = normalizarTexto(catalogTextoActual);
+
+    if (!texto) {
+        return lista;
+    }
+
+    return lista.filter(producto => {
+        const datosBuscables = [
+            producto.nombre,
+            producto.descripcion,
+            producto.marca,
+            producto.tipo,
+            producto.codigoInterno,
+            producto.precio,
+            ...convertirArray(producto.modelo),
+            ...convertirArray(producto.motor),
+            ...convertirArray(producto.anios),
+            ...convertirArray(producto.numeroParteFord),
+            ...convertirArray(producto.codigoMotorcraft),
+            ...convertirArray(producto.codigoOEM)
+        ];
+
+        return datosBuscables.some(valor => {
+            return normalizarTexto(valor).includes(texto);
+        });
+    });
+}
+
+function crearTarjetaCatalogoHTML(producto) {
+    const categoriaProducto = obtenerNombreCategoria(producto.categoria);
+    const modelo = obtenerEtiquetas(producto.modelo);
+    const motorProducto = obtenerEtiquetas(producto.motor);
+    const ford = obtenerEtiquetas(producto.numeroParteFord);
+    const codigo = producto.codigoInterno || producto.id;
+
+    return `
+        <article class="catalog-product-card">
+            <div class="catalog-product-image-wrap">
+                <span class="catalog-product-category">${escaparHTML(categoriaProducto)}</span>
+                <img
+                    src="${escaparHTML(producto.imagen)}"
+                    alt="${escaparHTML(producto.nombre)}"
+                    class="catalog-product-image zoomable-product-image"
+                    data-image="${escaparHTML(producto.imagen)}"
+                    data-name="${escaparHTML(producto.nombre)}"
+                    loading="lazy"
+                    title="Haz clic para ampliar"
+                    onerror="this.style.display='none';"
+                >
+            </div>
+
+            <div class="catalog-product-content">
+                <span class="catalog-product-code">${escaparHTML(codigo)}</span>
+                <h3>${escaparHTML(producto.nombre)}</h3>
+
+                <div class="catalog-product-meta">
+                    ${modelo ? `<span>🚗 ${escaparHTML(modelo)}</span>` : ""}
+                    ${motorProducto ? `<span>⚙ ${escaparHTML(motorProducto)}</span>` : ""}
+                </div>
+
+                ${ford ? `<div class="catalog-product-part"><small>Ford</small><strong>${escaparHTML(ford)}</strong></div>` : ""}
+
+                ${crearBloquePreciosHTML(producto, "catalog")}
+
+                <div class="catalog-product-bottom">
+                    <span class="catalog-product-status ${producto.disponibilidad ? "is-available" : "is-consult"}">
+                        ${producto.disponibilidad ? "Disponible" : "Consultar"}
+                    </span>
+                </div>
+
+                <div class="catalog-product-actions">
+                    <button
+                        type="button"
+                        class="catalog-add-button add-to-cart-button"
+                        data-product-id="${escaparHTML(producto.id)}"
+                    >
+                        🛒 Agregar al pedido
+                    </button>
+
+                    <button
+                        type="button"
+                        class="catalog-detail-button"
+                        data-product-detail="${escaparHTML(producto.id)}"
+                    >
+                        Ver detalles
+                    </button>
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+function actualizarFiltrosCatalogo() {
+    document.querySelectorAll("[data-catalog-category]").forEach(button => {
+        button.classList.toggle(
+            "active",
+            button.dataset.catalogCategory === catalogCategoriaActual
+        );
+    });
+}
+
+function renderizarCatalogoPrincipal() {
+    if (!catalogProducts) return;
+
+    const filtrados = obtenerProductosCatalogoFiltrados();
+    const visibles = filtrados.slice(0, catalogLimite);
+
+    catalogProducts.innerHTML = visibles
+        .map(crearTarjetaCatalogoHTML)
+        .join("");
+
+    if (catalogCount) {
+        catalogCount.textContent = String(filtrados.length);
+    }
+
+    if (catalogEmpty) {
+        catalogEmpty.hidden = filtrados.length !== 0;
+    }
+
+    if (catalogLoadMore) {
+        const hayMas = filtrados.length > visibles.length;
+        catalogLoadMore.hidden = !hayMas;
+    }
+
+    actualizarFiltrosCatalogo();
+}
+
+function seleccionarCategoriaCatalogo(categoriaSeleccionada) {
+    catalogCategoriaActual = categoriaSeleccionada || "todos";
+    catalogLimite = CATALOGO_POR_PAGINA;
+    renderizarCatalogoPrincipal();
+
+    document.getElementById("catalogo")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+}
+
+function abrirCategoria(category) {
+    seleccionarCategoriaCatalogo(category);
+}
+
+catalogSearch?.addEventListener("input", event => {
+    catalogTextoActual = event.target.value || "";
+    catalogLimite = CATALOGO_POR_PAGINA;
+    renderizarCatalogoPrincipal();
+});
+
+catalogFilters?.addEventListener("click", event => {
+    const button = event.target.closest("[data-catalog-category]");
+    if (!button) return;
+
+    seleccionarCategoriaCatalogo(button.dataset.catalogCategory);
+});
+
+catalogLoadMore?.addEventListener("click", () => {
+    catalogLimite += CATALOGO_POR_PAGINA;
+    renderizarCatalogoPrincipal();
+});
+
+/* =========================================
    MODAL
 ========================================= */
 
-function abrirCategoria(category) {
-    if (!modal) return;
-
-    categoriaActual = category;
-
-    if (modalTitle) {
-        modalTitle.textContent = obtenerNombreCategoria(category);
-    }
-
-    if (modalDescription) {
-        modalDescription.textContent =
-            "Productos disponibles en esta categoría.";
-    }
-
-    if (productSearch) {
-        productSearch.value = "";
-    }
-
-    mostrarProductos(productos[category] || []);
-
-    modal.classList.add("active");
-    document.body.style.overflow = "hidden";
-}
-
-function mostrarProductos(lista, preserveReference = false) {
+function mostrarProductos(lista) {
     if (!modalProducts) return;
-
-    if (!preserveReference) listaProductosActual = Array.isArray(lista) ? lista : [];
 
     modalProducts.innerHTML = "";
 
@@ -4419,17 +4695,6 @@ function cerrarModal() {
     modal.classList.remove("active");
     document.body.style.overflow = "";
 }
-
-
-/* =========================================
-   BOTONES "VER PRODUCTOS"
-========================================= */
-
-document.querySelectorAll(".view-products").forEach(button => {
-    button.addEventListener("click", function () {
-        abrirCategoria(this.dataset.category);
-    });
-});
 
 
 /* =========================================
@@ -4732,6 +4997,12 @@ document.addEventListener("keydown", event => {
 ========================================= */
 
 const NUMERO_WHATSAPP_PARTSOLUTIONS = "584122520412";
+const MENSAJE_WHATSAPP_PARTSOLUTIONS =
+    "SALUDOS MUY BUENAS TARDES QUIERO CONSULTAR DISPONIBILIDAD DE MI PEDIDO";
+
+// ==========================================================
+// VISUALIZACIÓN DE PRECIOS / CASHEA
+// ==========================================================
 
 const TASA_CASHEA = 859;
 const TASA_DOLAR = 980;
@@ -4747,82 +5018,26 @@ const CASHEA_LEVEL_PERCENTAGES = {
 
 let modoPrecioActual = "contado";
 let nivelCasheaActual = 6;
-let listaProductosActual = [];
 let carritoPedido = cargarCarritoPedido();
-
-
-function calculateCasheaDetails(precio, tasaDolar = TASA_DOLAR, tasaCashea = TASA_CASHEA, nivel = nivelCasheaActual) {
-    const precioEnDivisas = Number(precio) || 0;
-    const precioConAumento = precioEnDivisas / 0.92;
-    const precioConAumentoBs = precioConAumento * Number(tasaDolar || 1);
-    const divisorTasa = Number(tasaCashea || 1);
-    const precioTotalCashea = Math.ceil(precioConAumentoBs / divisorTasa);
-    const porcentajeInicial = CASHEA_LEVEL_PERCENTAGES[nivel] ?? 0.20;
-    const inicialDeCashea = precioTotalCashea * porcentajeInicial;
-    const totalCuotas = precioTotalCashea - inicialDeCashea;
-    const cuotasQuincenales = totalCuotas / 3;
-
-    return {
-        precioTotalCashea,
-        inicialDeCashea,
-        cuotasQuincenales,
-        porcentajeInicial
-    };
-}
-
-function obtenerDetalleCashea(producto, nivel = nivelCasheaActual) {
-    const precio = obtenerPrecioNumero(producto);
-    if (precio === null) return null;
-    return calculateCasheaDetails(precio, TASA_DOLAR, TASA_CASHEA, nivel);
-}
-
-function actualizarControlesPrecio() {
-    document.querySelectorAll("[data-price-mode]").forEach(button => {
-        button.classList.toggle("active", button.dataset.priceMode === modoPrecioActual);
-    });
-
-    const control = document.querySelector("[data-cashea-level-control]");
-    if (control) control.hidden = modoPrecioActual === "contado";
-
-    const select = document.getElementById("casheaLevel");
-    if (select) select.value = String(nivelCasheaActual);
-}
-
-function refrescarProductosVisibles() {
-    if (!listaProductosActual.length) return;
-    mostrarProductos(listaProductosActual, true);
-}
-
-function inicializarSelectorPrecios() {
-    document.querySelectorAll("[data-price-mode]").forEach(button => {
-        button.addEventListener("click", () => {
-            modoPrecioActual = button.dataset.priceMode || "contado";
-            actualizarControlesPrecio();
-            refrescarProductosVisibles();
-        });
-    });
-
-    const select = document.getElementById("casheaLevel");
-    select?.addEventListener("change", () => {
-        nivelCasheaActual = Number(select.value) || 6;
-        refrescarProductosVisibles();
-    });
-
-    actualizarControlesPrecio();
-}
 
 function cargarCarritoPedido() {
     try {
         const guardado = localStorage.getItem("partsolutions_carrito");
         const datos = guardado ? JSON.parse(guardado) : [];
         if (!Array.isArray(datos)) return [];
+
         return datos
             .filter(item => item && item.id)
             .map(item => ({
                 id: item.id,
                 cantidad: Math.max(1, Number(item.cantidad || 1)),
-                modalidad: item.modalidad === "cashea" || item.modalidad === "ambos" ? item.modalidad : "contado",
-                nivelCashea: Number(item.nivelCashea || 6)
+                modalidad:
+                    item.modalidad === "cashea" ||
+                    item.modalidad === "ambos"
+                        ? item.modalidad
+                        : "contado",
+                nivelCashea:
+                    Math.min(6, Math.max(1, Number(item.nivelCashea || 6)))
             }));
     } catch (error) {
         console.warn("No se pudo cargar el carrito.", error);
@@ -4926,11 +5141,16 @@ function obtenerTextoPedido() {
     if (carritoPedido.length === 0) return "";
 
     const lineas = [
-        "SALUDOS MUY BUENAS TARDES QUIERO CONSULTAR DISPONIBILIDAD DE MI PEDIDO",
+        MENSAJE_WHATSAPP_PARTSOLUTIONS,
         "",
-        "PartSolutions",
+        "Detalle del pedido:",
         ""
     ];
+
+    let totalContado = 0;
+    let totalCashea = 0;
+    let totalInicialCashea = 0;
+    let totalCuotasCashea = 0;
 
     carritoPedido.forEach((item, indice) => {
         const producto = obtenerProductoPorId(item.id);
@@ -4941,6 +5161,13 @@ function obtenerTextoPedido() {
         const modalidad = item.modalidad || "contado";
         const nivel = Number(item.nivelCashea || 6);
         const cashea = obtenerDetalleCashea(producto, nivel);
+
+        if (precio !== null) totalContado += precio * cantidad;
+        if (cashea) {
+            totalCashea += cashea.precioTotalCashea * cantidad;
+            totalInicialCashea += cashea.inicialDeCashea * cantidad;
+            totalCuotasCashea += cashea.cuotasQuincenales * cantidad;
+        }
 
         lineas.push(
             `${indice + 1}. ${producto.nombre}`,
@@ -4968,9 +5195,19 @@ function obtenerTextoPedido() {
         );
     });
 
+    lineas.push(
+        `Total contado: ${formatearMonto(totalContado)}`,
+        `Total Cashea: ${formatearMonto(totalCashea)}`,
+        `Inicial Cashea estimada: ${formatearMonto(totalInicialCashea)}`,
+        `3 cuotas quincenales: ${formatearMonto(totalCuotasCashea)}`,
+        "",
+        "Por favor, confirmen precio final y disponibilidad.",
+        "",
+        "Gracias."
+    );
+
     return lineas.join("\n");
 }
-
 
 function enviarPedidoWhatsApp() {
     if (carritoPedido.length === 0) {
@@ -5160,14 +5397,17 @@ function renderizarCarrito() {
         itemsContainer.style.display = "none";
         emptyState.style.display = "flex";
         totalElement.textContent = "0";
-        if (estimatedTotalElement) estimatedTotalElement.textContent = "$0";
+        if (estimatedTotalElement) estimatedTotalElement.innerHTML = "$0";
         return;
     }
 
     itemsContainer.style.display = "block";
     emptyState.style.display = "none";
 
-    let totalEstimado = 0;
+    let totalContado = 0;
+    let totalCashea = 0;
+    let totalInicialCashea = 0;
+    let totalCuotasCashea = 0;
     let hayPrecioFaltante = false;
 
     itemsContainer.innerHTML = carritoPedido.map(item => {
@@ -5176,10 +5416,63 @@ function renderizarCarrito() {
 
         const cantidad = Math.max(1, Number(item.cantidad || 1));
         const precio = obtenerPrecioNumero(producto);
-        const subtotal = subtotalProducto(producto, cantidad);
+        const nivel = Math.min(6, Math.max(1, Number(item.nivelCashea || 6)));
+        const modalidad = item.modalidad || "contado";
+        const cashea = obtenerDetalleCashea(producto, nivel);
+        const subtotalContado =
+            precio !== null ? precio * cantidad : null;
 
-        if (subtotal !== null) totalEstimado += subtotal;
+        if (subtotalContado !== null) totalContado += subtotalContado;
         else hayPrecioFaltante = true;
+
+        const subtotalCashea =
+            cashea ? cashea.precioTotalCashea * cantidad : null;
+
+        if (subtotalCashea !== null) {
+            totalCashea += subtotalCashea;
+            totalInicialCashea += cashea.inicialDeCashea * cantidad;
+            totalCuotasCashea += cashea.cuotasQuincenales * cantidad;
+        }
+
+        let pricingHTML = "";
+
+        if (modalidad === "cashea" && cashea) {
+            pricingHTML = `
+                <div class="cart-item-pricing-main cashea">
+                    <span>Cashea · Nivel ${nivel}</span>
+                    <strong>${escaparHTML(formatearMonto(cashea.precioTotalCashea))}</strong>
+                </div>
+                <div class="cart-item-pricing-details">
+                    <span>Inicial: <strong>${escaparHTML(formatearMonto(cashea.inicialDeCashea))}</strong></span>
+                    <span>3 cuotas: <strong>${escaparHTML(formatearMonto(cashea.cuotasQuincenales))}</strong></span>
+                </div>
+            `;
+        } else if (modalidad === "ambos" && cashea) {
+            pricingHTML = `
+                <div class="cart-item-pricing-main">
+                    <span>Contado</span>
+                    <strong>${precio !== null ? escaparHTML(formatearMonto(precio)) : "Consultar"}</strong>
+                </div>
+                <div class="cart-item-pricing-main cashea">
+                    <span>Cashea · Nivel ${nivel}</span>
+                    <strong>${escaparHTML(formatearMonto(cashea.precioTotalCashea))}</strong>
+                </div>
+                <div class="cart-item-pricing-details">
+                    <span>Inicial: <strong>${escaparHTML(formatearMonto(cashea.inicialDeCashea))}</strong></span>
+                    <span>3 cuotas: <strong>${escaparHTML(formatearMonto(cashea.cuotasQuincenales))}</strong></span>
+                </div>
+            `;
+        } else {
+            pricingHTML = `
+                <div class="cart-item-pricing-main">
+                    <span>Precio unitario</span>
+                    <strong>${precio !== null ? escaparHTML(formatearMonto(precio)) : "Consultar"}</strong>
+                </div>
+                <div class="cart-item-pricing-details">
+                    <span>Subtotal: <strong>${subtotalContado !== null ? escaparHTML(formatearMonto(subtotalContado)) : "Consultar"}</strong></span>
+                </div>
+            `;
+        }
 
         return `
             <article class="cart-item">
@@ -5192,6 +5485,10 @@ function renderizarCarrito() {
                 </div>
 
                 <div class="cart-item-info">
+                    <div class="cart-item-topline">
+                        <span class="cart-item-badge">${modalidad === "cashea" ? `CASHEA · NIVEL ${nivel}` : modalidad === "ambos" ? `CONTADO + CASHEA · NIVEL ${nivel}` : "CONTADO"}</span>
+                    </div>
+
                     <h3>${escaparHTML(producto.nombre)}</h3>
 
                     <span class="cart-item-code">
@@ -5200,27 +5497,18 @@ function renderizarCarrito() {
 
                     <p>
                         ${escaparHTML(obtenerEtiquetas(producto.modelo))}
-                        · ${escaparHTML(obtenerEtiquetas(producto.motor))}
+                        ${obtenerEtiquetas(producto.motor) ? ` · ${escaparHTML(obtenerEtiquetas(producto.motor))}` : ""}
                     </p>
 
                     <div class="cart-item-prices">
-                        <span>Precio unitario: <strong>${escaparHTML(formatearPrecio(producto))}</strong></span>
-                        <span>Subtotal: <strong>${subtotal !== null ? formatearMonto(subtotal) : "Consultar"}</strong></span>
+                        ${pricingHTML}
                     </div>
 
                     <div class="cart-item-bottom">
                         <div class="cart-quantity">
-                            <button
-                                type="button"
-                                data-cart-minus="${escaparHTML(producto.id)}"
-                            >−</button>
-
+                            <button type="button" data-cart-minus="${escaparHTML(producto.id)}">−</button>
                             <span>${cantidad}</span>
-
-                            <button
-                                type="button"
-                                data-cart-plus="${escaparHTML(producto.id)}"
-                            >+</button>
+                            <button type="button" data-cart-plus="${escaparHTML(producto.id)}">+</button>
                         </div>
 
                         <button
@@ -5237,10 +5525,26 @@ function renderizarCarrito() {
     }).join("");
 
     totalElement.textContent = String(cantidadTotalCarrito());
+
     if (estimatedTotalElement) {
-        estimatedTotalElement.textContent = hayPrecioFaltante
-            ? `${formatearMonto(totalEstimado)} + consultar`
-            : formatearMonto(totalEstimado);
+        if (modoPrecioActual === "cashea") {
+            estimatedTotalElement.innerHTML = `
+                <span class="cart-total-primary-label">Total Cashea</span>
+                <strong>${formatearMonto(totalCashea)}${hayPrecioFaltante ? " + consultar" : ""}</strong>
+                <small>Inicial estimada: ${formatearMonto(totalInicialCashea)} · 3 cuotas: ${formatearMonto(totalCuotasCashea)}</small>
+            `;
+        } else if (modoPrecioActual === "ambos") {
+            estimatedTotalElement.innerHTML = `
+                <span class="cart-total-primary-label">Contado</span>
+                <strong>${formatearMonto(totalContado)}${hayPrecioFaltante ? " + consultar" : ""}</strong>
+                <small>Cashea: ${formatearMonto(totalCashea)}</small>
+            `;
+        } else {
+            estimatedTotalElement.innerHTML = `
+                <span class="cart-total-primary-label">Total contado</span>
+                <strong>${formatearMonto(totalContado)}${hayPrecioFaltante ? " + consultar" : ""}</strong>
+            `;
+        }
     }
 }
 
@@ -6257,7 +6561,7 @@ document.addEventListener(
 
                 const mensaje =
                     encodeURIComponent(
-                        `Hola, PartSolutions.\n\n` +
+                        `${MENSAJE_WHATSAPP_PARTSOLUTIONS}\n\n` +
                         `Deseo consultar el repuesto:\n\n` +
                         `${producto.nombre}\n` +
                         `Código: ${
@@ -6318,8 +6622,6 @@ document.addEventListener(
    INICIALIZACIÓN
 ========================================= */
 
-inicializarSelectorPrecios();
-
 async function inicializar() {
 
     resetSelect(
@@ -6360,6 +6662,7 @@ async function inicializar() {
         cargarMarcas();
         cargarCategorias();
         actualizarConteosCategorias();
+        renderizarCatalogoPrincipal();
 
     } catch (error) {
 
@@ -6370,6 +6673,7 @@ async function inicializar() {
 
         cargarMarcas();
         cargarCategorias();
+        renderizarCatalogoPrincipal();
 
         mostrarMensajeResultado(
             `
@@ -6405,6 +6709,11 @@ async function inicializar() {
     }
 
     /*
+       Selector de modalidad de precios.
+    */
+    inicializarSelectorPrecios();
+
+    /*
        El carrusel se inicializa después de que
        el DOM ya contiene sus 10 categorías.
     */
@@ -6424,6 +6733,7 @@ window.abrirCarrito = abrirCarrito;
 window.cerrarCarrito = cerrarCarrito;
 window.vehiculosFord = vehiculosFord;
 window.obtenerTodosLosProductos = obtenerTodosLosProductos;
+window.renderizarCatalogoPrincipal = renderizarCatalogoPrincipal;
 window.abrirImagenGrande = abrirImagenGrande;
 
 /* =========================================

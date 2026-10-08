@@ -36,7 +36,7 @@
                     <b id="cartCount">0</b>
                 </button>
 
-                <a href="#contacto" class="header-contact">Contáctanos</a>
+                <a href="https://wa.me/584122520412?text=SALUDOS%20MUY%20BUENAS%20TARDES%20QUIERO%20CONSULTAR%20DISPONIBILIDAD%20DE%20MI%20PEDIDO" class="header-contact" target="_blank" rel="noopener">Contáctanos</a>
             </div>
 
             <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false">
@@ -112,6 +112,86 @@
                     <span><small>REVISA</small><strong>Mi pedido</strong></span>
                     <b>→</b>
                 </button>
+            </div>
+        </section>
+
+        <!-- =====================================================
+             CATÁLOGO DIRECTO
+        ====================================================== -->
+        <section id="catalogo" class="catalog-section">
+            <div class="container">
+                <div class="section-heading catalog-heading">
+                    <span>CATÁLOGO PARTSOLUTIONS</span>
+                    <h2>Encuentra tu repuesto</h2>
+                    <p>Busca, revisa el precio y agrega el repuesto directamente a tu pedido.</p>
+                </div>
+
+                <div class="catalog-toolbar">
+                    <div class="catalog-search-wrap">
+                        <span class="catalog-search-icon">⌕</span>
+                        <input
+                            type="search"
+                            id="catalogSearch"
+                            placeholder="Buscar por nombre, código Ford, Motorcraft, modelo o número de parte..."
+                            autocomplete="off"
+                        >
+                    </div>
+
+                    <div class="catalog-summary">
+                        <strong id="catalogCount">0</strong>
+                        <span>productos</span>
+                    </div>
+                </div>
+
+                <div class="price-view-panel catalog-price-panel" aria-label="Modo de visualización de precios">
+                    <div class="price-view-copy">
+                        <span>¿CÓMO DESEAS VER LOS PRECIOS?</span>
+                        <strong>Selecciona una modalidad</strong>
+                    </div>
+
+                    <div class="price-view-buttons">
+                        <button type="button" class="price-view-button active" data-price-mode="contado">💵 Precio de contado</button>
+                        <button type="button" class="price-view-button" data-price-mode="cashea">🟡 Cashea</button>
+                        <button type="button" class="price-view-button" data-price-mode="ambos">📊 Ambos</button>
+                    </div>
+
+                    <div class="cashea-level-control" data-cashea-level-control hidden>
+                        <label for="casheaLevel">Nivel Cashea</label>
+                        <select id="casheaLevel">
+                            <option value="1">Nivel 1 · 60% inicial</option>
+                            <option value="2">Nivel 2 · 50% inicial</option>
+                            <option value="3">Nivel 3 · 40% inicial</option>
+                            <option value="4">Nivel 4 · 30% inicial</option>
+                            <option value="5">Nivel 5 · 25% inicial</option>
+                            <option value="6" selected>Nivel 6 · 20% inicial</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="catalog-filters" id="catalogFilters" aria-label="Filtrar por categoría">
+                    <button type="button" class="catalog-filter active" data-catalog-category="todos">Todos</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="motor">Motor</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="kit-tiempo">Kit de Tiempo</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="inyeccion">Inyección</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="suspension">Suspensión</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="frenos">Frenos</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="carroceria">Carrocería</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="ignicion">Ignición</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="electrico">Eléctrico</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="correas">Correas</button>
+                    <button type="button" class="catalog-filter" data-catalog-category="transmision">Transmisión</button>
+                </div>
+
+                <div id="catalogProducts" class="catalog-products" aria-live="polite"></div>
+
+                <div id="catalogEmpty" class="catalog-empty" hidden>
+                    <strong>No encontramos ese repuesto.</strong>
+                    <p>Prueba con otro nombre, código Ford, modelo o número de parte.</p>
+                </div>
+
+                <div class="catalog-more-wrap">
+                    <button type="button" id="catalogLoadMore" class="catalog-load-more">Cargar más productos</button>
+                </div>
             </div>
         </section>
 
@@ -203,33 +283,10 @@
         <section id="repuestos" class="categories-section">
             <div class="container">
 
-                <div class="price-view-panel" aria-label="Modo de visualización de precios">
-                    <div class="price-view-copy">
-                        <span>¿CÓMO DESEAS VER LOS PRECIOS?</span>
-                        <strong>Selecciona una modalidad</strong>
-                    </div>
-                    <div class="price-view-buttons">
-                        <button type="button" class="price-view-button active" data-price-mode="contado">💵 Precio de contado</button>
-                        <button type="button" class="price-view-button" data-price-mode="cashea">🟡 Cashea</button>
-                        <button type="button" class="price-view-button" data-price-mode="ambos">📊 Ambos</button>
-                    </div>
-                    <div class="cashea-level-control" data-cashea-level-control hidden>
-                        <label for="casheaLevel">Nivel Cashea</label>
-                        <select id="casheaLevel">
-                            <option value="1">Nivel 1 · 60% inicial</option>
-                            <option value="2">Nivel 2 · 50% inicial</option>
-                            <option value="3">Nivel 3 · 40% inicial</option>
-                            <option value="4">Nivel 4 · 30% inicial</option>
-                            <option value="5">Nivel 5 · 25% inicial</option>
-                            <option value="6" selected>Nivel 6 · 20% inicial</option>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="section-heading categories-heading">
                     <span>CATÁLOGO PARTSOLUTIONS</span>
                     <h2>Explora por categoría</h2>
-                    <p>Selecciona una categoría para ver todos los repuestos disponibles.</p>
+                    <p>Selecciona una categoría para filtrar el catálogo y ver sus repuestos.</p>
                 </div>
 
                 <div class="category-carousel-wrap">
@@ -385,34 +442,7 @@
         </div>
     </footer>
 
-    <!-- MODAL DE PRODUCTOS -->
-    <div class="modal" id="productModal">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <button class="modal-close" id="modalClose" type="button" aria-label="Cerrar">×</button>
-
-            <div class="modal-header">
-                <span>PARTSOLUTIONS</span>
-                <h2 id="modalTitle">Productos</h2>
-                <p id="modalDescription">Encuentra el repuesto que necesitas.</p>
-            </div>
-
-            <div class="product-search">
-                <input type="text" id="productSearch" placeholder="Buscar dentro de esta categoría..." autocomplete="off">
-            </div>
-
-            <div class="modal-products" id="modalProducts"></div>
-        </div>
-    </div>
-
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html> 
-<a 
-    href="https://wa.me/584122520412?text=Hola%2C%20estoy%20interesado%20en%20consultar%20un%20repuesto%20Ford."
-    class="btn-contact"
-    target="_blank"
->
-    Contáctanos
-</a>
