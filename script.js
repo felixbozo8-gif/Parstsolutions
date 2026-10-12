@@ -5004,8 +5004,8 @@ const MENSAJE_WHATSAPP_PARTSOLUTIONS =
 // VISUALIZACIÓN DE PRECIOS / CASHEA
 // ==========================================================
 
-const TASA_CASHEA = 859;
-const TASA_DOLAR = 980;
+const TASA_CASHEA = 875;
+const TASA_DOLAR = 1000;
 
 const CASHEA_LEVEL_PERCENTAGES = {
     1: 0.60,
