@@ -30,6 +30,11 @@
             </nav>
 
             <div class="header-actions">
+                <button type="button" class="auth-trigger" id="authTriggerBtn" aria-label="Mi Cuenta">
+                    <span class="auth-trigger-icon">👤</span>
+                    <span id="authTriggerText">Mi Cuenta</span>
+                </button>
+
                 <button type="button" class="cart-trigger" data-cart-open aria-label="Abrir mi pedido">
                     <span class="cart-trigger-icon">🛒</span>
                     <span>Mi pedido</span>
@@ -442,7 +447,13 @@
         </div>
     </footer>
 
+    <!-- Firebase SDK (Authentication & Firestore Cloud) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="auth.js"></script>
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html> 

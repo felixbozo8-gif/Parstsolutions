@@ -1,0 +1,7 @@
+*.backup.*
+*.backup.js
+*.backup.xlsx
+.git
+.vscode
+.idea
+*.log
